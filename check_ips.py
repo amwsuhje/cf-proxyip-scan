@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 
-WORKER_HOST = "dash.cloudflare.com"
+WORKER_HOST = "winnie.winniezhang.workers.dev"
 
 async def is_cf_proxy(ip):
     url = f"http://{ip}"
