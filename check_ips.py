@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 
-WORKER_HOST = "minisub.pages.dev"
+WORKER_HOST = "dash.cloudflare.com"
 
 async def is_cf_proxy(ip):
     url = f"http://{ip}"
