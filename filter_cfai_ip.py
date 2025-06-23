@@ -1,27 +1,39 @@
 import asyncio
 import aiohttp
+import time
 
 INPUT_FILE = "proxyip.txt"
 OUTPUT_FILE = "CFAIip.txt"
-TEST_URLS = [
-    "https://chat.openai.com",
-    "https://cloudflare.com"
-]
-TIMEOUT = aiohttp.ClientTimeout(total=8)
-
+TEST_URLS = {
+    "chatgpt": "https://chat.openai.com/favicon.ico",
+    "cloudflare": "https://cloudflare.com"
+}
+MIN_SPEED = 1_000_000  # 1MB/s in Bytes
+TIMEOUT = aiohttp.ClientTimeout(total=10)
 
 async def test_ip(ip):
     proxy = f"http://{ip}"
     try:
         async with aiohttp.ClientSession(timeout=TIMEOUT) as session:
-            for url in TEST_URLS:
-                async with session.get(url, proxy=proxy, ssl=False) as resp:
-                    if resp.status != 200:
-                        return False
+            # 测试 cloudflare.com 可达性
+            async with session.get(TEST_URLS["cloudflare"], proxy=proxy, ssl=False) as resp:
+                if resp.status != 200:
+                    return False
+
+            # 测试 chat.openai.com 速度
+            start = time.time()
+            async with session.get(TEST_URLS["chatgpt"], proxy=proxy, ssl=False) as resp:
+                if resp.status != 200:
+                    return False
+                content = await resp.read()
+                duration = time.time() - start
+                size = len(content)
+                speed = size / duration  # Bytes per second
+                if speed < MIN_SPEED:
+                    return False
         return True
     except:
         return False
-
 
 async def filter_ips():
     region = None
